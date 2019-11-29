@@ -19,6 +19,10 @@ def logger(name, loglevel="ERROR"):
         log.addHandler(ch)
     return log
 
+class yibase:
+    def __init__(self, connection_socket, loglevel="ERROR"):
+        self.socket = connection_socket
+        self.log = logger(type(self).__name__, loglevel)
 
 class yisocket:
     def __init__(self, ip="192.168.42.1", port=7878, loglevel="ERROR"):
@@ -29,15 +33,17 @@ class yisocket:
         self.enabled = False
         self.log = logger("yisocket", loglevel)
 
-    def send(self, id, param=None, token=0):
+    def send(self, id, param=None, param_type=None):
         data = {"msg_id": id}
         if self.token:
             data["token"] = self.token
         else:
-            data["token"] = token
+            data["token"] = 0
 
         if param:
             data["param"] = param
+        if param_type:
+            data["type"] = param_type
         self.socket.send(str.encode(json.dumps(data)))
         time.sleep(1)
 
@@ -48,8 +54,14 @@ class yisocket:
                 if resp["rval"] == -3:
                     self.log.error("Different device connected.")
                     raise Exception
-                if resp["rval"] == -4:
+                elif resp["rval"] == -4:
                     self.log.error("Unauthorized: %i" % resp["msg_id"])
+                    raise Exception
+                elif resp["rval"] == -14:
+                    self.log.error("Unable to set setting.")
+                    raise Exception
+                elif resp["rval"] == -27:
+                    self.log.error("An error has occured. Check SD.")
                     raise Exception
         except json.decoder.JSONDecodeError:
             self.log.error("JSON decode failed: %s" % message)
@@ -98,10 +110,9 @@ class yisocket:
                 return resp["param"]
 
 
-class yistream:
+class yistream(yibase):
     def __init__(self, connection_socket, loglevel="ERROR"):
-        self.socket = connection_socket
-        self.log = logger("yistream", loglevel)
+        super().__init__(connection_socket, loglevel)
         self.enabled = False
 
     def __start_thread(self):
@@ -120,10 +131,7 @@ class yistream:
         self.enabled = False
 
 
-class yivideo:
-    def __init__(self, connection_socket, loglevel="ERROR"):
-        self.socket = connection_socket
-        self.log = logger("yivideo", loglevel)
+class yivideo(yibase):
 
     def start(self):
         self.log.debug("start recording video to SD")
@@ -142,10 +150,7 @@ class yivideo:
         return path
 
 
-class yiphoto:
-    def __init__(self, connection_socket, loglevel="ERROR"):
-        self.socket = connection_socket
-        self.log = logger("yiphoto", loglevel)
+class yiphoto(yibase):
 
     def capture(self):
         self.log.debug("saving photo")
@@ -158,6 +163,43 @@ class yiphoto:
                     return m["param"]
 
 
+class yisettings(yibase):
+
+    def options(self, param):
+        self.socket.send(9, param)
+        resp = self.socket.get_messages()
+        options = None
+        for m in resp:
+            if "msg_id" in m and "options" in m:
+                if m["msg_id"] == 9:
+                    options = dict()
+                    options["options"] = m["options"]
+                    if "permission" in m:
+                        options["permission"] = m["permission"]
+        return options
+
+    def set(self, setting, option):
+        self.socket.send(2, option, setting)
+        self.socket.get_messages()
+
+    def get(self):
+        self.socket.send(3)
+        resp = self.socket.get_messages(4096)
+        settings = None
+        for m in resp:
+            if "msg_id" in m and "param" in m:
+                if m["msg_id"] == 3:
+                    settings = m["param"]
+
+        if settings:
+            settings_joined = dict()
+            for s in settings:
+                settings_joined = {**settings_joined, **s}
+            settings = settings_joined
+
+        return settings
+
+
 class yi:
     def __init__(self, ip="192.168.42.1", port=7878, loglevel="DEBUG"):
         self.ip = ip
@@ -168,6 +210,7 @@ class yi:
         self.stream = yistream(self.socket, loglevel)
         self.video = yivideo(self.socket, loglevel)
         self.photo = yiphoto(self.socket, loglevel)
+        self.settings = yisettings(self.socket, loglevel)
 
     def get_settings(self):
         self.socket.send(3)
