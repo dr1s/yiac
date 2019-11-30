@@ -3,7 +3,7 @@
 import time
 import argparse
 
-from api import yi
+from yiac.api import yi
 
 
 def print_settings(y, filter_name):
