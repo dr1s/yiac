@@ -19,10 +19,12 @@ def logger(name, loglevel="ERROR"):
         log.addHandler(ch)
     return log
 
+
 class yibase:
     def __init__(self, connection_socket, loglevel="ERROR"):
         self.socket = connection_socket
         self.log = logger(type(self).__name__, loglevel)
+
 
 class yisocket:
     def __init__(self, ip="192.168.42.1", port=7878, loglevel="ERROR"):
@@ -132,7 +134,6 @@ class yistream(yibase):
 
 
 class yivideo(yibase):
-
     def start(self):
         self.log.debug("start recording video to SD")
         self.socket.send(513)
@@ -151,7 +152,6 @@ class yivideo(yibase):
 
 
 class yiphoto(yibase):
-
     def capture(self):
         self.log.debug("saving photo")
         self.socket.send(769)
@@ -164,7 +164,6 @@ class yiphoto(yibase):
 
 
 class yisettings(yibase):
-
     def options(self, param):
         self.socket.send(9, param)
         resp = self.socket.get_messages()

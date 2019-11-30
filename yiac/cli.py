@@ -17,7 +17,7 @@ def print_settings(y, filter_name):
     else:
         for s in settings:
             options = y.settings.options(s)
-            if filter_name == 'all' or filter_name == options["permission"]:
+            if filter_name == "all" or filter_name == options["permission"]:
                 print(s)
                 print("   value: %s" % settings[s])
                 print("   permission: %s" % options["permission"])
@@ -32,12 +32,24 @@ def main():
     parser.add_argument(
         "-p", "--port", type=int, help="Yi Port (default: 7878)", default=7878
     )
-    parser.add_argument("--stream", action="store_true", default=False, help="Enable RTSP stream")
-    parser.add_argument("-s", "--setting", help="Get and set setting options, e.g. all, settable, readonly or any settingname") 
+    parser.add_argument(
+        "--stream", action="store_true", default=False, help="Enable RTSP stream"
+    )
+    parser.add_argument(
+        "-s",
+        "--setting",
+        help="Get and set setting options, e.g. all, settable, readonly or any settingname",
+    )
     parser.add_argument("--set")
-    parser.add_argument("--record-start", action="store_true", default=False, help="start video recording")
-    parser.add_argument("--record-stop", action="store_true", default=False, help="stop video recording")
-    parser.add_argument("--proxy", default=554, help="proxy stream to localhost")
+    parser.add_argument(
+        "--record-start",
+        action="store_true",
+        default=False,
+        help="start video recording",
+    )
+    parser.add_argument(
+        "--record-stop", action="store_true", default=False, help="stop video recording"
+    )
 
     args = parser.parse_args()
 
@@ -62,6 +74,7 @@ def main():
         y.video.stop()
 
     y.close()
+
 
 if __name__ == "__main__":
     main()

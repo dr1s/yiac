@@ -17,17 +17,13 @@ Python API for the Xiaomi Yi Action Camera
 
 ### Save a photo to SD
 
-    y.save_photo()
+    y.photo.capture()
 
-### Run stream
+### enable RTSP stream
 
-    # Run in a different thread to be able to still issue commands while the stream is runnig
-    import threading
-    from yiac import yi
+    y.stream.enable()
 
-    y = yi()
-    y.connect()
+## start/stoprding
 
-    worker = getattr(y, "enable_strea,")
-    t.threading.Tread(target=worker)
-    t.start()
+    y.video.start()
+    y.video.stop()

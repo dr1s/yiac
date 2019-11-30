@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="yiac",
-    version="0.1.dev1",
+    version="0.1.dev2",
     url="https://github.com/dr1s/yiac",
     author="Daniel Schmitz",
     license="MIT",
