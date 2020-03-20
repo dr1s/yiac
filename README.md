@@ -4,7 +4,7 @@ Python API/CLI for the Xiaomi Yi Action Camera
 
 ## Install
 
-    pip install https://githb.com/dr1s/yiac.git
+    pip install https://github.com/dr1s/yiac.git
 
 ## CLI
     usage: yiac [-h] [-i IP] [-p PORT] [--stream] [-s SETTING] [--set SET]
